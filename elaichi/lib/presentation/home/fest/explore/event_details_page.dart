@@ -14,12 +14,13 @@ import 'package:elaichi/presentation/home/fest/explore/widgets/registration.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class EventDetailsPage extends StatelessWidget {
   EventDetailsPage({
-    Key? key,
+    super.key,
     required this.event,
-  }) : super(key: key);
+  });
 
   final Event event;
 
@@ -27,19 +28,21 @@ class EventDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final format = DateFormat('MMM');
+    final description = jsonDecode(event.description) as List<dynamic>;
 
     return SafeArea(
       child: Scaffold(
         bottomNavigationBar: RegisterBottomBar(
           child: BlocConsumer<RegistrationCubit, RegistrationState>(
+            bloc: context.read<RegistrationCubit>(),
             listener: (context, state) {
               state.whenOrNull(
                 success: () {},
                 error: (error) {
-                  if (error == 'User Not Registered') {
-                    Navigator.pushNamed(
-                      context,
-                      AppRouter.registration,
+                  if (error == 'User Not Registered Event_Details') {
+                    toastUtil.showToast(
+                      mode: ToastMode.Error,
+                      title: 'Please Register for Fest First',
                     );
                   } else {
                     toastUtil.showToast(
@@ -60,7 +63,7 @@ class EventDetailsPage extends StatelessWidget {
                           .isNotEmpty)
                       ? Text(
                           'Registered',
-                          style: interTextTheme.bodyText1,
+                          style: interTextTheme.bodyLarge,
                         )
                       : YellowFlatButton(
                           onTapped: () async {
@@ -68,6 +71,7 @@ class EventDetailsPage extends StatelessWidget {
                                 .read<RegistrationCubit>()
                                 .createEventRegistration(
                                   event: event,
+                                  page: 'Event_Details',
                                 );
                           },
                           text: 'Register',
@@ -79,6 +83,7 @@ class EventDetailsPage extends StatelessWidget {
                         .read<RegistrationCubit>()
                         .createEventRegistration(
                           event: event,
+                          page: 'Event_Details',
                         );
                   },
                   text: 'Register',
@@ -94,6 +99,7 @@ class EventDetailsPage extends StatelessWidget {
                                 .read<RegistrationCubit>()
                                 .createEventRegistration(
                                   event: event,
+                                  page: 'Event_Details',
                                 );
                           },
                           text: 'Register',
@@ -124,29 +130,80 @@ class EventDetailsPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  jsonDecode(event.name)['heading'].toString(),
-                  style: interTextTheme.subtitle2!.copyWith(
+                  event.name,
+                  style: interTextTheme.titleSmall!.copyWith(
                     color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  '${event.startDate.day.toString().padLeft(2, '0')} ${format.format(event.startDate)} | ${event.startDate.hour.toString().padLeft(2, '0')}:${event.startDate.minute.toString().padLeft(2, '0')}',
-                  style: interTextTheme.bodyText1!.copyWith(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 14,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${event.startDate.day.toString().padLeft(2, '0')} ${format.format(event.startDate)} | ${event.startDate.hour.toString().padLeft(2, '0')}:${event.startDate.minute.toString().padLeft(2, '0')}',
+                      style: interTextTheme.bodyLarge!.copyWith(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 14,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        final url =
+                            'https://www.google.com/maps/search/?api=1&query=${event.location!.lat},${event.location!.long}';
+                        launchUrlString(
+                          url,
+                          mode: LaunchMode.externalNonBrowserApplication,
+                        );
+                      },
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            color: Colors.white.withOpacity(0.6),
+                            size: 14,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            event.location!.name,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white.withOpacity(0.6),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                if (description.isEmpty)
+                  const Text('')
+                else
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: description.length,
+                    itemBuilder: (context, index) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            description[index]['desc'].toString(),
+                            style: interTextTheme.bodyLarge!.copyWith(
+                              color: AppColors.grey6.withOpacity(0.8),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                        ],
+                      );
+                    },
                   ),
-                ),
-                const SizedBox(height: 24),
                 Text(
-                  jsonDecode(event.description)[0]['desc'].toString(),
-                  style: interTextTheme.bodyText1!
-                      .copyWith(color: AppColors.grey6.withOpacity(0.8)),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Prize: ${jsonDecode(event.name)['prizeAmount'].toString()}',
-                  style: interTextTheme.bodyText1!.copyWith(
+                  'Prize: ${event.prizeMoney}',
+                  style: interTextTheme.bodyLarge!.copyWith(
                     fontSize: 14,
                     color: Colors.black,
                   ),

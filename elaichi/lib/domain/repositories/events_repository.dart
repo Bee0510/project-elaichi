@@ -43,7 +43,7 @@ class EventRepository {
     }
   }
 
-  Future<Either<CustomException, EventRegistration>> createEventRegistration({
+  Future<Either<CustomException, EventRegistration?>> createEventRegistration({
     required String eventID,
     required String userID,
   }) async {
@@ -82,7 +82,14 @@ class EventRepository {
   }
 
   Map<String, List<Event>> getCategorisedEvents(List<Event> events) {
-    final map = <String, List<Event>>{};
+    final map = <String, List<Event>>{
+      'TECHNICAL': [],
+      'PRO': [],
+      'GUEST-LECTURES': [],
+      'EXHIBITIONS': [],
+      'FUN': [],
+      'WORKSHOP': [],
+    };
 
     for (final element in events) {
       if (map.keys.contains(element.type)) {
@@ -102,7 +109,19 @@ class EventRepository {
     );
 
     final format = DateFormat('MMM');
+    // TODO : Make this dynamic
+    const startDate = 3;
+    const endDate = 5;
     for (final element in events) {
+      if (element.startDate.day < startDate) {
+        continue;
+      }
+      if (element.startDate.day > endDate) {
+        continue;
+      }
+      if (element.status == StatusType.EXPIRED) {
+        continue;
+      }
       if (map.keys.contains(
         '${element.startDate.day} ${format.format(element.startDate)}',
       )) {
@@ -110,7 +129,7 @@ class EventRepository {
             .add(element);
       } else {
         map['${element.startDate.day} ${format.format(element.startDate)}'] = [
-          element
+          element,
         ];
       }
     }

@@ -12,7 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 ///as a student of NIT Rourkela
 class WebMailCard extends StatelessWidget {
   ///Default Constructor
-  const WebMailCard({Key? key}) : super(key: key);
+  const WebMailCard({super.key});
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<FestBloc>();
@@ -38,7 +38,7 @@ class WebMailCard extends StatelessWidget {
             left: 20,
             child: Text(
               Strings.registerNow,
-              style: interTextTheme.bodyText1!.copyWith(
+              style: interTextTheme.bodyLarge!.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -48,7 +48,7 @@ class WebMailCard extends StatelessWidget {
             left: 20,
             child: Text(
               Strings.zimbraCardText,
-              style: interTextTheme.bodyText1!
+              style: interTextTheme.bodyLarge!
                   .copyWith(fontSize: 12, color: AppColors.grey17),
             ),
           ),
@@ -87,12 +87,25 @@ class WebMailCard extends StatelessWidget {
                       },
                     );
                   } else {
-                    Navigator.pushNamed(context, AppRouter.registrationForm);
+                    showModalBottomSheet<void>(
+                      isScrollControlled: true,
+                      context: context,
+                      builder: (context) => const WebMailLoginBottomSheet(),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                      ),
+                    ).then(
+                      (value) => context
+                          .read<FestBloc>()
+                          .add(const FestEvent.webMailLogIn()),
+                    );
                   }
                 },
                 child: Text(
                   Strings.verifyNow,
-                  style: interTextTheme.bodyText2!.copyWith(
+                  style: interTextTheme.bodyMedium!.copyWith(
                     fontWeight: FontWeight.w500,
                     color: Colors.white,
                     letterSpacing: -0.41,
@@ -100,7 +113,7 @@ class WebMailCard extends StatelessWidget {
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );

@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:elaichi/domain/models/event/event.dart';
 import 'package:elaichi/presentation/core/router/app_router.dart';
@@ -9,10 +8,10 @@ import 'package:intl/intl.dart';
 
 class LowPriorityEventItem extends StatelessWidget {
   const LowPriorityEventItem({
-    Key? key,
+    super.key,
     required this.event,
     this.fullWidth = false,
-  }) : super(key: key);
+  });
 
   final Event event;
   final bool fullWidth;
@@ -57,11 +56,8 @@ class LowPriorityEventItem extends StatelessWidget {
                       height: 24,
                       width: fullWidth ? 235 : 200,
                       child: ScrollingText(
-                        text: jsonDecode(
-                          event.name,
-                        )['heading']
-                            .toString(),
-                        style: interTextTheme.subtitle2!.copyWith(
+                        text: event.name,
+                        style: interTextTheme.titleSmall!.copyWith(
                           color: Colors.white,
                           fontSize: 20,
                         ),
@@ -73,22 +69,20 @@ class LowPriorityEventItem extends StatelessWidget {
                       height: 17,
                       child: Text(
                         '${event.startDate.day.toString().padLeft(2, '0')} ${format.format(event.startDate)} | ${event.startDate.hour.toString().padLeft(2, '0')}:${event.startDate.minute.toString().padLeft(2, '0')}',
-                        style: interTextTheme.bodyText1!.copyWith(
+                        style: interTextTheme.bodyLarge!.copyWith(
                           color: Colors.white.withOpacity(0.6),
                           fontSize: 14,
                         ),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    if (jsonDecode(event.name)['prizeAmount'] != null &&
-                        jsonDecode(event.name)['prizeAmount'] != '')
+                    if (event.prizeMoney != '')
                       SizedBox(
                         width: 127,
                         height: 23,
                         child: ScrollingText(
-                          text:
-                              'Prize: ${jsonDecode(event.name)['prizeAmount'].toString()}',
-                          style: interTextTheme.bodyText1!.copyWith(
+                          text: 'Prize: ${event.prizeMoney}',
+                          style: interTextTheme.bodyLarge!.copyWith(
                             fontSize: 14,
                             color: Colors.white,
                           ),

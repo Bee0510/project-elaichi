@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:elaichi/data/constants/app_env.dart';
 import 'package:elaichi/domain/repositories/user_repository.dart';
 import 'package:elaichi/presentation/components/buttons/blue_button.dart';
-import 'package:elaichi/presentation/components/buttons/custom_button.dart';
 import 'package:elaichi/presentation/components/toasts/toast_util.dart';
 import 'package:elaichi/presentation/core/theme/colors.dart';
 import 'package:elaichi/presentation/mail/cubit/webmail_cubit.dart';
@@ -15,7 +14,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 ///The Mail Page
 class WebMailPage extends StatefulWidget {
   /// Default constructor
-  const WebMailPage({Key? key}) : super(key: key);
+  const WebMailPage({super.key});
 
   @override
   State<WebMailPage> createState() => _WebMailPageState();
@@ -102,9 +101,9 @@ class _WebMailPageState extends State<WebMailPage> {
 
 class WebViewStack extends StatefulWidget {
   const WebViewStack({
-    Key? key,
+    super.key,
     required this.controller,
-  }) : super(key: key);
+  });
 
   final Completer<WebViewController> controller;
 
@@ -118,21 +117,31 @@ class _WebViewStackState extends State<WebViewStack> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        WebView(
-          onWebViewCreated: (controller) =>
-              widget.controller.complete(controller),
-          onProgress: (progress) => setState(() {
-            loadingPercentage = progress;
-          }),
-          onPageStarted: (url) => setState(() {
-            loadingPercentage = 0;
-          }),
-          onPageFinished: (url) => setState(() {
-            loadingPercentage = 100;
-          }),
-          initialUrl: Env.avenueWebMailBaseUrl +
-              context.read<WebmailCubit>().zsAuthToken!,
-          javascriptMode: JavascriptMode.unrestricted,
+        WillPopScope(
+          onWillPop: () async {
+            final controller = await widget.controller.future;
+            if (await controller.canGoBack()) {
+              await controller.goBack();
+              return false;
+            }
+            return true;
+          },
+          child: WebView(
+            onWebViewCreated: (controller) =>
+                widget.controller.complete(controller),
+            onProgress: (progress) => setState(() {
+              loadingPercentage = progress;
+            }),
+            onPageStarted: (url) => setState(() {
+              loadingPercentage = 0;
+            }),
+            onPageFinished: (url) => setState(() {
+              loadingPercentage = 100;
+            }),
+            initialUrl: Env.avenueWebMailBaseUrl +
+                context.read<WebmailCubit>().zsAuthToken!,
+            javascriptMode: JavascriptMode.unrestricted,
+          ),
         ),
         if (loadingPercentage < 100)
           LinearProgressIndicator(
