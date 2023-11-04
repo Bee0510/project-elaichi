@@ -1,8 +1,10 @@
 // ignore_for_file: avoid_unnecessary_containers, use_decorated_box
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:elaichi/data/constants/global_enums.dart';
+import 'package:elaichi/data/remote/graphql/graphql_service.dart';
 import 'package:elaichi/domain/models/event/event.dart';
 import 'package:elaichi/domain/models/org/org.dart';
+import 'package:elaichi/domain/models/user/user.dart';
 import 'package:elaichi/domain/repositories/events_repository.dart';
 import 'package:elaichi/domain/repositories/user_repository.dart';
 import 'package:elaichi/presentation/components/buttons/back_button.dart';
@@ -10,6 +12,7 @@ import 'package:elaichi/presentation/components/buttons/yellow_buttons.dart';
 import 'package:elaichi/presentation/core/router/app_router.dart';
 import 'package:elaichi/presentation/core/theme/base_theme.dart';
 import 'package:elaichi/presentation/core/theme/colors.dart';
+import 'package:elaichi/presentation/core/utils/event_type_map.dart';
 import 'package:elaichi/presentation/core/utils/sizeconfig.dart';
 import 'package:elaichi/presentation/core/utils/strings.dart';
 import 'package:elaichi/presentation/home/fest/bloc/fest_bloc.dart';
@@ -24,13 +27,14 @@ import 'package:elaichi/presentation/home/fest/widgets/header_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quiver/iterables.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({
-    Key? key,
+    super.key,
     required this.fest,
     required this.events,
-  }) : super(key: key);
+  });
 
   final Org fest;
 
@@ -78,8 +82,10 @@ class _ExplorePageState extends State<ExplorePage>
           ? RegisterBottomBar(
               child: YellowFlatButton(
                 text: 'Register Now!',
-                onTapped: () =>
-                    Navigator.pushNamed(context, AppRouter.registration),
+                onTapped: () => launchUrlString(
+                  "https://inno.nitrkl.in/",
+                  mode: LaunchMode.externalApplication,
+                ),
               ),
             )
           : null,
@@ -126,7 +132,7 @@ class _ExplorePageState extends State<ExplorePage>
                             height: 48,
                             child: Text(
                               widget.fest.name,
-                              style: interTextTheme.headline1,
+                              style: interTextTheme.displayLarge,
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -134,7 +140,7 @@ class _ExplorePageState extends State<ExplorePage>
                             height: 154,
                             child: Text(
                               widget.fest.description,
-                              style: interTextTheme.bodyText1!.copyWith(
+                              style: interTextTheme.bodyLarge!.copyWith(
                                 color: AppColors.grey6.withOpacity(0.8),
                               ),
                               maxLines: 7,
@@ -165,7 +171,7 @@ class _ExplorePageState extends State<ExplorePage>
                 child: DurationDates(
                   iconSize: 18,
                   text: duration,
-                  style: interTextTheme.caption!.copyWith(
+                  style: interTextTheme.bodySmall!.copyWith(
                     height: 1.05,
                     fontSize: 20,
                   ),
@@ -177,9 +183,29 @@ class _ExplorePageState extends State<ExplorePage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '${categorisedEvents!.keys.toList()[0][0].toUpperCase()}${categorisedEvents.keys.toList()[0].substring(1).toLowerCase()}',
-                    style: interTextTheme.headline2,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        eventTypeMapping[categorisedEvents!.keys.toList()[0]]!,
+                        style: interTextTheme.displayMedium,
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          AppRouter.allEvents,
+                          arguments: {'events': widget.events, 'index': 2},
+                        ),
+                        child: Text(
+                          'View More',
+                          style: interTextTheme.bodyLarge!.copyWith(
+                            fontSize: 14,
+                            height: 1.21,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24),
                   HighPriorityEventList(
@@ -187,9 +213,29 @@ class _ExplorePageState extends State<ExplorePage>
                         categorisedEvents[categorisedEvents.keys.toList()[0]]!,
                   ),
                   const SizedBox(height: 80),
-                  Text(
-                    '${categorisedEvents.keys.toList()[1][0].toUpperCase()}${categorisedEvents.keys.toList()[1].substring(1).toLowerCase()}',
-                    style: interTextTheme.headline2,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        eventTypeMapping[categorisedEvents.keys.toList()[1]]!,
+                        style: interTextTheme.displayMedium,
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          AppRouter.allEvents,
+                          arguments: {'events': widget.events, 'index': 1},
+                        ),
+                        child: Text(
+                          'View More',
+                          style: interTextTheme.bodyLarge!.copyWith(
+                            fontSize: 14,
+                            height: 1.21,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24),
                   HighPriorityEventList(
@@ -197,58 +243,59 @@ class _ExplorePageState extends State<ExplorePage>
                         categorisedEvents[categorisedEvents.keys.toList()[1]]!,
                   ),
                   const SizedBox(height: 80),
+                  if (categorisedEvents['GUEST-LECTURES']!.isNotEmpty) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          eventTypeMapping[categorisedEvents.keys.toList()[2]]!,
+                          style: interTextTheme.displayMedium,
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            AppRouter.allEvents,
+                            arguments: {'events': widget.events, 'index': 3},
+                          ),
+                          child: Text(
+                            'View More',
+                            style: interTextTheme.bodyLarge!.copyWith(
+                              fontSize: 14,
+                              height: 1.21,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    SpeakerEventList(
+                      events: categorisedEvents['GUEST-LECTURES'] ?? [],
+                    ),
+                    const SizedBox(height: 80),
+                  ],
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '${categorisedEvents.keys.toList()[2][0].toUpperCase()}${categorisedEvents.keys.toList()[2].substring(1).toLowerCase()}',
-                        style: interTextTheme.headline2,
+                        eventTypeMapping[categorisedEvents.keys.toList()[3]]!,
+                        style: interTextTheme.displayMedium,
                       ),
                       GestureDetector(
                         onTap: () => Navigator.pushNamed(
                           context,
                           AppRouter.allEvents,
-                          arguments: {'events': widget.events},
+                          arguments: {'events': widget.events, 'index': 4},
                         ),
                         child: Text(
                           'View More',
-                          style: interTextTheme.bodyText1!.copyWith(
+                          style: interTextTheme.bodyLarge!.copyWith(
                             fontSize: 14,
                             height: 1.21,
                             decoration: TextDecoration.underline,
                           ),
                         ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  LowPriorityEventsList(
-                    allEvents:
-                        categorisedEvents[categorisedEvents.keys.toList()[2]]!,
-                  ),
-                  const SizedBox(height: 80),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${categorisedEvents.keys.toList()[3][0].toUpperCase()}${categorisedEvents.keys.toList()[3].substring(1).toLowerCase()}',
-                        style: interTextTheme.headline2,
                       ),
-                      GestureDetector(
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          AppRouter.allEvents,
-                          arguments: {'events': widget.events},
-                        ),
-                        child: Text(
-                          'View More',
-                          style: interTextTheme.bodyText1!.copyWith(
-                            fontSize: 14,
-                            height: 1.21,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      )
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -257,25 +304,101 @@ class _ExplorePageState extends State<ExplorePage>
                         categorisedEvents[categorisedEvents.keys.toList()[3]]!,
                   ),
                   const SizedBox(height: 80),
-                  if ((categorisedEvents['GUEST-LECTURES '] ??
-                          categorisedEvents['WORKSHOPS'] ??
-                          [])
-                      .isNotEmpty) ...[
-                    Text(
-                      'Guest Lectures',
-                      style: interTextTheme.headline2,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        eventTypeMapping[categorisedEvents.keys.toList()[4]]!,
+                        style: interTextTheme.displayMedium,
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          AppRouter.allEvents,
+                          arguments: {'events': widget.events, 'index': 5},
+                        ),
+                        child: Text(
+                          'View More',
+                          style: interTextTheme.bodyLarge!.copyWith(
+                            fontSize: 14,
+                            height: 1.21,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  LowPriorityEventsList(
+                    allEvents:
+                        categorisedEvents[categorisedEvents.keys.toList()[4]]!,
+                  ),
+                  const SizedBox(height: 80),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        eventTypeMapping[categorisedEvents.keys.toList()[5]]!,
+                        style: interTextTheme.displayMedium,
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          AppRouter.allEvents,
+                          arguments: {'events': widget.events, 'index': 6},
+                        ),
+                        child: Text(
+                          'View More',
+                          style: interTextTheme.bodyLarge!.copyWith(
+                            fontSize: 14,
+                            height: 1.21,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  LowPriorityEventsList(
+                    allEvents:
+                        categorisedEvents[categorisedEvents.keys.toList()[5]]!,
+                  ),
+                  const SizedBox(height: 80),
+                  if (categorisedEvents['OTHER']!.isNotEmpty) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          eventTypeMapping[categorisedEvents.keys.toList()[6]]!,
+                          style: interTextTheme.displayMedium,
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            AppRouter.allEvents,
+                            arguments: {'events': widget.events, 'index': 7},
+                          ),
+                          child: Text(
+                            'View More',
+                            style: interTextTheme.bodyLarge!.copyWith(
+                              fontSize: 14,
+                              height: 1.21,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 24),
-                    SpeakerEventList(
-                      events: categorisedEvents['GUEST-LECTURES '] ??
-                          categorisedEvents['WORKSHOPS'] ??
-                          [],
+                    LowPriorityEventsList(
+                      allEvents: categorisedEvents[
+                          categorisedEvents.keys.toList()[6]]!,
                     ),
                     const SizedBox(height: 80),
                   ],
                   Text(
                     'Our Schedule',
-                    style: interTextTheme.headline2,
+                    style: interTextTheme.displayMedium,
                   ),
                   const SizedBox(height: 24),
                   CalenderTabView(
@@ -295,9 +418,9 @@ class _ExplorePageState extends State<ExplorePage>
 
 class SpeakerEventList extends StatelessWidget {
   const SpeakerEventList({
-    Key? key,
+    super.key,
     this.events = const [],
-  }) : super(key: key);
+  });
 
   final List<Event> events;
 
@@ -319,9 +442,9 @@ class SpeakerEventList extends StatelessWidget {
 
 class LowPriorityEventsList extends StatelessWidget {
   const LowPriorityEventsList({
-    Key? key,
+    super.key,
     required this.allEvents,
-  }) : super(key: key);
+  });
 
   final List<Event> allEvents;
 
@@ -330,15 +453,16 @@ class LowPriorityEventsList extends StatelessWidget {
     if (allEvents.isEmpty) {
       return const SizedBox();
     }
-    List<Event> events = [];
+    final events = <Event>[];
     for (final event in allEvents) {
-      if (event.status != StatusType.EXPIRED) {
+      if (event.status == StatusType.ACTIVE) {
         events.add(event);
       }
     }
     final partedList = partition(events, 3).toList();
+    final colLength = events.length > 3 ? 3 : events.length;
     return SizedBox(
-      height: 330,
+      height: 110 * colLength.toDouble(),
       child: ListView.separated(
         clipBehavior: Clip.none,
         scrollDirection: Axis.horizontal,
@@ -351,7 +475,7 @@ class LowPriorityEventsList extends StatelessWidget {
                   LowPriorityEventItem(
                     event: partedList[index1][index2],
                   ),
-                  const SizedBox(height: 16)
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -366,9 +490,9 @@ class LowPriorityEventsList extends StatelessWidget {
 
 class HighPriorityEventList extends StatelessWidget {
   const HighPriorityEventList({
-    Key? key,
+    super.key,
     required this.allEvents,
-  }) : super(key: key);
+  });
 
   final List<Event> allEvents;
 
@@ -377,9 +501,9 @@ class HighPriorityEventList extends StatelessWidget {
     if (allEvents.isEmpty) {
       return const SizedBox();
     }
-    List<Event> events = [];
+    final events = <Event>[];
     for (final event in allEvents) {
-      if (event.status != StatusType.EXPIRED) {
+      if (event.status == StatusType.ACTIVE) {
         events.add(event);
       }
     }

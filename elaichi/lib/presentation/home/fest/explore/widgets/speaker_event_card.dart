@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:elaichi/domain/models/event/event.dart';
 import 'package:elaichi/presentation/components/buttons/yellow_buttons.dart';
 import 'package:elaichi/presentation/components/toasts/toast_util.dart';
@@ -13,12 +11,13 @@ import 'package:elaichi/presentation/home/fest/explore/widgets/scrolling_text.da
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class SpeakerEventCard extends StatelessWidget {
   SpeakerEventCard({
-    Key? key,
+    super.key,
     required this.event,
-  }) : super(key: key);
+  });
 
   final Event event;
 
@@ -68,11 +67,11 @@ class SpeakerEventCard extends StatelessWidget {
               SizedBox(
                 height: 29,
                 child: ScrollingText(
-                  text: jsonDecode(event.name)['heading'].toString(),
-                  style: interTextTheme.subtitle2!.copyWith(
+                  text: event.name,
+                  style: interTextTheme.titleSmall!.copyWith(
                     color: Colors.black,
                   ),
-                  condition: 28,
+                  condition: 10,
                 ),
               ),
               const SizedBox(height: 4),
@@ -112,7 +111,7 @@ class SpeakerEventCard extends StatelessWidget {
                   iconSize: 18,
                   text: duration,
                   color: Colors.black.withOpacity(0.6),
-                  style: interTextTheme.caption!.copyWith(
+                  style: interTextTheme.bodySmall!.copyWith(
                     color: Colors.black.withOpacity(0.6),
                     fontSize: 14,
                     fontWeight: FontWeight.w300,
@@ -129,18 +128,14 @@ class SpeakerEventCard extends StatelessWidget {
                   children: [
                     const SizedBox(width: 2),
                     BlocConsumer<RegistrationCubit, RegistrationState>(
+                      bloc: context.read<RegistrationCubit>(),
                       listener: (context, state) {
                         state.whenOrNull(
                           error: (error) {
-                            if (error == 'User Not Registered') {
-                              Navigator.pushNamed(
-                                context,
-                                AppRouter.registration,
-                              );
-                            } else {
-                              toastUtil.showToast(
-                                mode: ToastMode.Error,
-                                title: error,
+                            if (error == 'User Not Registered Speaker') {
+                              launchUrlString(
+                                'https://inno.nitrkl.in/',
+                                mode: LaunchMode.externalApplication,
                               );
                             }
                           },
@@ -161,6 +156,7 @@ class SpeakerEventCard extends StatelessWidget {
                                           .read<RegistrationCubit>()
                                           .createEventRegistration(
                                             event: event,
+                                            page: 'Speaker',
                                           );
                                     },
                                     text: 'Register',
@@ -173,6 +169,7 @@ class SpeakerEventCard extends StatelessWidget {
                                   .read<RegistrationCubit>()
                                   .createEventRegistration(
                                     event: event,
+                                    page: 'Speaker',
                                   );
                             },
                             text: 'Register',
@@ -189,6 +186,7 @@ class SpeakerEventCard extends StatelessWidget {
                                           .read<RegistrationCubit>()
                                           .createEventRegistration(
                                             event: event,
+                                            page: 'Speaker',
                                           );
                                     },
                                     text: 'Register',
@@ -197,10 +195,10 @@ class SpeakerEventCard extends StatelessWidget {
                           },
                         );
                       },
-                    )
+                    ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),

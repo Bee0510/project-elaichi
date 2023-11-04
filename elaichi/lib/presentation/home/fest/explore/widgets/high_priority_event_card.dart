@@ -13,12 +13,13 @@ import 'package:elaichi/presentation/home/fest/explore/widgets/scrolling_text.da
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class HighPriorityEventCard extends StatelessWidget {
   HighPriorityEventCard({
-    Key? key,
+    super.key,
     required this.event,
-  }) : super(key: key);
+  });
 
   final Event event;
   final toastUtil = ToastUtil.getInstance();
@@ -80,7 +81,7 @@ class HighPriorityEventCard extends StatelessWidget {
                       height: 17,
                       child: Text(
                         '${event.startDate.day.toString().padLeft(2, '0')} ${format.format(event.startDate)} | ${event.startDate.hour.toString().padLeft(2, '0')}:${event.startDate.minute.toString().padLeft(2, '0')}',
-                        style: interTextTheme.bodyText1!.copyWith(
+                        style: interTextTheme.bodyLarge!.copyWith(
                           color: Colors.black.withOpacity(0.6),
                           fontSize: 14,
                           height: 1.19,
@@ -94,7 +95,7 @@ class HighPriorityEventCard extends StatelessWidget {
                           ? const Text('')
                           : Text(
                               description[0]['desc'].toString(),
-                              style: interTextTheme.bodyText1!.copyWith(
+                              style: interTextTheme.bodyLarge!.copyWith(
                                 height: 1.18,
                                 fontSize: 16,
                                 color: Colors.black.withOpacity(0.6),
@@ -122,7 +123,7 @@ class HighPriorityEventCard extends StatelessWidget {
                               height: 22,
                               child: ScrollingText(
                                 text: 'Prize: ${event.prizeMoney}',
-                                style: interTextTheme.bodyText1!.copyWith(
+                                style: interTextTheme.bodyLarge!.copyWith(
                                   fontSize: 14,
                                   color: Colors.black,
                                 ),
@@ -134,15 +135,11 @@ class HighPriorityEventCard extends StatelessWidget {
                             listener: (context, state) {
                               state.whenOrNull(
                                 error: (error) {
-                                  if (error == 'User Not Registered') {
-                                    Navigator.pushNamed(
-                                      context,
-                                      AppRouter.registration,
-                                    );
-                                  } else {
-                                    toastUtil.showToast(
-                                      mode: ToastMode.Error,
-                                      title: error,
+                                  if (error ==
+                                      'User Not Registered High_Priority_Event') {
+                                    launchUrlString(
+                                      'https://inno.nitrkl.in/',
+                                      mode: LaunchMode.externalApplication,
                                     );
                                   }
                                 },
@@ -164,6 +161,7 @@ class HighPriorityEventCard extends StatelessWidget {
                                                 .read<RegistrationCubit>()
                                                 .createEventRegistration(
                                                   event: event,
+                                                  page: 'High_Priority_Event',
                                                 );
                                           },
                                           text: 'Register',
@@ -176,6 +174,7 @@ class HighPriorityEventCard extends StatelessWidget {
                                         .read<RegistrationCubit>()
                                         .createEventRegistration(
                                           event: event,
+                                          page: 'High_Priority_Event',
                                         );
                                   },
                                   text: 'Register',
@@ -192,6 +191,7 @@ class HighPriorityEventCard extends StatelessWidget {
                                                 .read<RegistrationCubit>()
                                                 .createEventRegistration(
                                                   event: event,
+                                                  page: 'High_Priority_Event',
                                                 );
                                           },
                                           text: 'Register',
@@ -200,13 +200,13 @@ class HighPriorityEventCard extends StatelessWidget {
                                 },
                               );
                             },
-                          )
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),
